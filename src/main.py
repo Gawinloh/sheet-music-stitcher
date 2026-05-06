@@ -12,6 +12,7 @@ from pathlib import Path
 from PIL import Image
 
 from src.crop import process_image
+from src.dedup import filter_duplicates
 from src.layout import get_page_settings
 from src.pdf_builder import build_pdf, TitleInfo
 
@@ -88,6 +89,17 @@ def main():
         help="Date string (shown on title page)",
     )
     parser.add_argument(
+        "--keep-dupes",
+        action="store_true",
+        help="Don't skip duplicate images.",
+    )
+    parser.add_argument(
+        "--dedup-threshold",
+        type=int,
+        default=5,
+        help="Hash distance threshold for duplicates (default: 5)",
+    )
+    parser.add_argument(
         "--page-size",
         type=str,
         default="a4",
@@ -124,6 +136,18 @@ def main():
 
     if not args.no_crop:
         print("Auto-cropped and normalized backgrounds.")
+
+    # Duplicate detection
+    names = [p.name for p in image_paths]
+    images, names = filter_duplicates(
+        images, names,
+        threshold=args.dedup_threshold,
+        keep_dupes=args.keep_dupes,
+    )
+
+    if len(images) == 0:
+        print("Error: No images remaining after duplicate removal.", file=sys.stderr)
+        sys.exit(1)
 
     settings = get_page_settings(
         page_size=args.page_size,
