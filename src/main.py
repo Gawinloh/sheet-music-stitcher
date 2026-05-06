@@ -11,6 +11,7 @@ from pathlib import Path
 
 from PIL import Image
 
+from src.align import align_images
 from src.crop import process_image
 from src.dedup import filter_duplicates
 from src.layout import get_page_settings
@@ -89,6 +90,11 @@ def main():
         help="Date string (shown on title page)",
     )
     parser.add_argument(
+        "--no-align",
+        action="store_true",
+        help="Skip staff alignment.",
+    )
+    parser.add_argument(
         "--keep-dupes",
         action="store_true",
         help="Don't skip duplicate images.",
@@ -148,6 +154,11 @@ def main():
     if len(images) == 0:
         print("Error: No images remaining after duplicate removal.", file=sys.stderr)
         sys.exit(1)
+
+    # Staff alignment
+    if not args.no_align:
+        images = align_images(images)
+        print("Aligned staff positions.")
 
     settings = get_page_settings(
         page_size=args.page_size,
