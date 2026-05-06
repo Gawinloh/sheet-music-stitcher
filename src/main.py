@@ -12,6 +12,7 @@ from pathlib import Path
 from PIL import Image
 
 from src.crop import process_image
+from src.layout import get_page_settings
 from src.pdf_builder import build_pdf
 
 
@@ -68,6 +69,25 @@ def main():
         action="store_true",
         help="Skip auto-cropping and background normalization.",
     )
+    parser.add_argument(
+        "--page-size",
+        type=str,
+        default="a4",
+        choices=["a4", "letter"],
+        help="Page size (default: a4)",
+    )
+    parser.add_argument(
+        "--margin",
+        type=float,
+        default=15,
+        help="Page margin in mm (default: 15)",
+    )
+    parser.add_argument(
+        "--gap",
+        type=float,
+        default=8,
+        help="Vertical gap between systems in mm (default: 8)",
+    )
 
     args = parser.parse_args()
 
@@ -87,7 +107,13 @@ def main():
     if not args.no_crop:
         print("Auto-cropped and normalized backgrounds.")
 
-    build_pdf(images, args.output)
+    settings = get_page_settings(
+        page_size=args.page_size,
+        margin=args.margin,
+        gap=args.gap,
+    )
+
+    build_pdf(images, args.output, settings=settings)
     print(f"\nDone! Output saved to: {args.output}")
 
 
