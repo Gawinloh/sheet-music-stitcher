@@ -13,7 +13,7 @@ from PIL import Image
 
 from src.crop import process_image
 from src.layout import get_page_settings
-from src.pdf_builder import build_pdf
+from src.pdf_builder import build_pdf, TitleInfo
 
 
 SUPPORTED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".bmp", ".tiff", ".tif", ".webp"}
@@ -70,6 +70,24 @@ def main():
         help="Skip auto-cropping and background normalization.",
     )
     parser.add_argument(
+        "--title",
+        type=str,
+        default=None,
+        help="Song title (adds a title page)",
+    )
+    parser.add_argument(
+        "--composer",
+        type=str,
+        default=None,
+        help="Composer/arranger name (shown on title page)",
+    )
+    parser.add_argument(
+        "--date",
+        type=str,
+        default=None,
+        help="Date string (shown on title page)",
+    )
+    parser.add_argument(
         "--page-size",
         type=str,
         default="a4",
@@ -113,7 +131,16 @@ def main():
         gap=args.gap,
     )
 
-    build_pdf(images, args.output, settings=settings)
+    # Build title info if --title provided
+    title_info = None
+    if args.title:
+        title_info = TitleInfo(
+            title=args.title,
+            composer=args.composer,
+            date=args.date,
+        )
+
+    build_pdf(images, args.output, settings=settings, title_info=title_info)
     print(f"\nDone! Output saved to: {args.output}")
 
 
