@@ -9,6 +9,9 @@ import re
 import sys
 from pathlib import Path
 
+from PIL import Image
+
+from src.crop import process_image
 from src.pdf_builder import build_pdf
 
 
@@ -60,6 +63,11 @@ def main():
         default=Path("output.pdf"),
         help="Output PDF filename (default: output.pdf)",
     )
+    parser.add_argument(
+        "--no-crop",
+        action="store_true",
+        help="Skip auto-cropping and background normalization.",
+    )
 
     args = parser.parse_args()
 
@@ -68,7 +76,18 @@ def main():
     for p in image_paths:
         print(f"  {p.name}")
 
-    build_pdf(image_paths, args.output)
+    # Load and optionally process images
+    images = []
+    for p in image_paths:
+        img = Image.open(p).convert("RGB")
+        if not args.no_crop:
+            img = process_image(img)
+        images.append(img)
+
+    if not args.no_crop:
+        print("Auto-cropped and normalized backgrounds.")
+
+    build_pdf(images, args.output)
     print(f"\nDone! Output saved to: {args.output}")
 
 
