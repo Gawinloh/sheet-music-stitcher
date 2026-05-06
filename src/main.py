@@ -95,6 +95,11 @@ def main():
         help="Skip staff alignment.",
     )
     parser.add_argument(
+        "--preview",
+        action="store_true",
+        help="Open interactive preview for manual crop adjustment.",
+    )
+    parser.add_argument(
         "--keep-dupes",
         action="store_true",
         help="Don't skip duplicate images.",
@@ -132,16 +137,25 @@ def main():
     for p in image_paths:
         print(f"  {p.name}")
 
-    # Load and optionally process images
-    images = []
-    for p in image_paths:
-        img = Image.open(p).convert("RGB")
-        if not args.no_crop:
-            img = process_image(img)
-        images.append(img)
+    # Load and process images
+    if args.preview and not args.no_crop:
+        # Interactive preview mode
+        from src.preview import preview_and_adjust
+        raw_images = [Image.open(p).convert("RGB") for p in image_paths]
+        names_for_preview = [p.name for p in image_paths]
+        print("Opening interactive preview...")
+        images = preview_and_adjust(raw_images, names_for_preview)
+    else:
+        # Automatic mode
+        images = []
+        for p in image_paths:
+            img = Image.open(p).convert("RGB")
+            if not args.no_crop:
+                img = process_image(img)
+            images.append(img)
 
-    if not args.no_crop:
-        print("Auto-cropped and normalized backgrounds.")
+        if not args.no_crop:
+            print("Auto-cropped and normalized backgrounds.")
 
     # Duplicate detection
     names = [p.name for p in image_paths]

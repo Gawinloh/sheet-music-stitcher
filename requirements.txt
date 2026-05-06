@@ -2,3 +2,6 @@ Pillow>=10.0
 fpdf2>=2.7
 numpy>=1.24
 imagehash>=4.3
+
+# Optional: only needed for --preview mode
+# matplotlib>=3.7
